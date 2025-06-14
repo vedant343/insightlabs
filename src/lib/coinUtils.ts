@@ -1,4 +1,4 @@
-interface CoinData {
+export interface CoinData {
   coins: Array<{
     item: {
       symbol: string;

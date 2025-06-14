@@ -6,8 +6,13 @@ import PriceChart from "../components/PriceChart";
 import {
   fetchCurrentPrice,
   fetchTrendingCoins,
-  fetchBasicStats,
   fetch7DayChart,
+  getPrice,
+  getMarketCap,
+  get24hChange,
+  getSparkline,
+  get24hVolume,
+  listTrending,
 } from "../lib/coinGecko";
 
 type ChatMessage = { role: "user" | "bot"; message: string };
@@ -86,49 +91,61 @@ export default function ChatPage() {
         } else {
           botResponse = `Sorry, couldn't load the chart for ${coinId}`;
         }
-      } else if (/current price of ([a-zA-Z ]+)/i.test(input)) {
-        const match = input.match(/current price of ([a-zA-Z ]+)/i);
-        const coinId = match?.[1]?.trim().toLowerCase();
-        if (coinId) {
-          const price = await fetchCurrentPrice(coinId);
-          if (price) {
-            botResponse = `The current price of ${coinId} is $${price}`;
-          } else {
-            botResponse = `Sorry, I couldn't find the price for ${coinId}`;
-          }
-        }
-      } else if (/trending coins/i.test(input)) {
-        const trending = await fetchTrendingCoins();
-        if (trending && trending.length) {
-          botResponse =
-            `Trending now:\n` +
-            trending
-              .slice(0, 5)
-              .map(
-                (c: { name: string; symbol: string }, i: number) =>
-                  `${i + 1}. ${c.name} (${c.symbol})`
-              )
-              .join("\n");
-        } else {
-          botResponse = `Sorry, I couldn't fetch trending coins.`;
-        }
-      } else if (/basic stats of ([a-zA-Z ]+)/i.test(input)) {
-        const match = input.match(/basic stats of ([a-zA-Z ]+)/i);
-        const coinId = match?.[1]?.trim().toLowerCase();
-        if (coinId) {
-          const stats = await fetchBasicStats(coinId);
-          if (stats) {
-            botResponse = `${coinId.toUpperCase()} Market Cap: $${
-              stats.marketCap
-            }\n24h Change: ${stats.change24h?.toFixed(2)}%\nAbout: ${
-              stats.description
-            }`;
-          } else {
-            botResponse = `Sorry, I couldn't find information for ${coinId}`;
-          }
-        }
+      } else if (/price of ([a-zA-Z]+)/i.test(input)) {
+        const match = input.match(/price of ([a-zA-Z]+)/i);
+        const symbol = match![1];
+        const trendingData = await fetchTrendingCoins();
+        const price = getPrice(trendingData, symbol);
+        botResponse = price
+          ? `${symbol.toUpperCase()} is trading at $${price}`
+          : `Coin not found`;
+      } else if (/market cap of ([a-zA-Z]+)/i.test(input)) {
+        const match = input.match(/market cap of ([a-zA-Z]+)/i);
+        const symbol = match![1];
+        const trendingData = await fetchTrendingCoins();
+        const cap = getMarketCap(trendingData, symbol);
+        botResponse = cap
+          ? `${symbol.toUpperCase()} market cap is $${cap.toLocaleString()}`
+          : `Coin not found`;
+      } else if (/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i.test(input)) {
+        const match = input.match(/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i);
+        const symbol = match![1];
+        const currency = match![2];
+        const trendingData = await fetchTrendingCoins();
+        const change = get24hChange(trendingData, symbol, currency);
+        botResponse =
+          change !== null
+            ? `${symbol.toUpperCase()} changed ${change.toFixed(
+                2
+              )}% in ${currency.toUpperCase()} last 24h`
+            : `Data not found`;
+      } else if (/sparkline of ([a-zA-Z]+)/i.test(input)) {
+        const match = input.match(/sparkline of ([a-zA-Z]+)/i);
+        const symbol = match![1];
+        const trendingData = await fetchTrendingCoins();
+        const url = getSparkline(trendingData, symbol);
+        botResponse = url
+          ? `Here is the sparkline: ${url}`
+          : `No sparkline found`;
+      } else if (/24h volume of ([a-zA-Z]+)/i.test(input)) {
+        const match = input.match(/24h volume of ([a-zA-Z]+)/i);
+        const symbol = match![1];
+        const trendingData = await fetchTrendingCoins();
+        const vol = get24hVolume(trendingData, symbol);
+        botResponse = vol
+          ? `${symbol.toUpperCase()} 24h volume is $${vol.toLocaleString()}`
+          : `Coin not found`;
+      } else if (/list trending/i.test(input)) {
+        const trendingData = await fetchTrendingCoins();
+        const trending = listTrending(trendingData);
+        botResponse = trending
+          .map(
+            (t: { name: string; symbol: string; rank: number }) =>
+              `${t.name} (${t.symbol}) rank ${t.rank}`
+          )
+          .join("\n");
       } else {
-        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of BTC", "current price of bitcoin", "trending coins", "basic stats of ethereum"`;
+        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of BTC", "price of bitcoin", "market cap of ethereum", "24h change of BTC in USD", "sparkline of ETH", "24h volume of BTC", "list trending"`;
       }
 
       setMessages((prev) => [...prev, { role: "bot", message: botResponse }]);

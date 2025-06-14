@@ -1,11 +1,12 @@
-interface TrendingCoin {
-  item: {
-    id: string;
-    symbol: string;
-    name: string;
-    small: string;
-  };
-}
+import {
+  getPrice,
+  getMarketCap,
+  get24hChange,
+  getSparkline,
+  get24hVolume,
+  listTrending,
+  type CoinData,
+} from "./coinUtils";
 
 // 1. Get current price by id (like 'bitcoin', 'ethereum')
 export async function fetchCurrentPrice(id: string) {
@@ -16,16 +17,11 @@ export async function fetchCurrentPrice(id: string) {
   return data[id]?.usd;
 }
 
-// 2. Get trending coins
-export async function fetchTrendingCoins() {
+// 2. Get trending coins with detailed data
+export async function fetchTrendingCoins(): Promise<CoinData> {
   const res = await fetch("https://api.coingecko.com/api/v3/search/trending");
   const data = await res.json();
-  return data?.coins?.map((coin: TrendingCoin) => ({
-    id: coin.item.id,
-    symbol: coin.item.symbol,
-    name: coin.item.name,
-    small: coin.item.small,
-  }));
+  return data;
 }
 
 // 3. Get Coin Stats (like Market Cap, 24h change, Description) by id
@@ -47,3 +43,13 @@ export async function fetch7DayChart(id: string) {
   const data = await res.json();
   return data.prices; // [ [timestamp, price], ... ]
 }
+
+// Export utility functions for direct use
+export {
+  getPrice,
+  getMarketCap,
+  get24hChange,
+  getSparkline,
+  get24hVolume,
+  listTrending,
+};
