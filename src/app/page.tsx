@@ -12,6 +12,7 @@ import {
   getSparkline,
   get24hVolume,
   listTrending,
+  fetchCurrentPrice,
 } from "../lib/coinGecko";
 
 type ChatMessage = { role: "user" | "bot"; message: string };
@@ -73,18 +74,29 @@ export default function ChatPage() {
           newHoldings[coin]
         } ${coin.toUpperCase()}.`;
       } else if (/portfolio value/i.test(input)) {
+        // Symbol to CoinGecko id mapping (expand as needed)
+        const symbolToId: Record<string, string> = {
+          btc: "bitcoin",
+          eth: "ethereum",
+          usdt: "tether",
+          sol: "solana",
+          bnb: "binancecoin",
+          xrp: "ripple",
+          ada: "cardano",
+          doge: "dogecoin",
+          ton: "the-open-network",
+          avax: "avalanche-2",
+          // Add more as needed
+        };
         let total = 0;
-        const trendingData = await fetchTrendingCoins();
-
         for (const [coin, amount] of Object.entries(holdings)) {
-          const coinData = trendingData.coins.find(
-            (c: any) => c.item.symbol.toLowerCase() === coin.toLowerCase()
-          );
-          if (coinData) {
-            total += coinData.item.data.price * amount;
+          const id = symbolToId[coin.toLowerCase()];
+          if (!id) continue;
+          const price = await fetchCurrentPrice(id);
+          if (price) {
+            total += price * amount;
           }
         }
-
         botResponse = `Your portfolio is worth $${total.toLocaleString(
           undefined,
           { minimumFractionDigits: 2, maximumFractionDigits: 2 }
