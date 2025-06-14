@@ -1,16 +1,19 @@
 export interface CoinData {
   coins: Array<{
     item: {
+      id: string;
       symbol: string;
+      name: string;
+      market_cap_rank: number;
+      price_btc: number;
+      score: number;
       data: {
         price: number;
         market_cap: number;
-        price_change_percentage_24h: Record<string, number>;
-        sparkline: string;
         total_volume: number;
+        sparkline: string;
+        price_change_percentage_24h: Record<string, number>;
       };
-      name: string;
-      market_cap_rank: number;
     };
   }>;
 }
@@ -19,14 +22,14 @@ export function getPrice(coinData: CoinData, symbol: string) {
   const coin = coinData.coins.find(
     (c) => c.item.symbol.toLowerCase() === symbol.toLowerCase()
   );
-  return coin ? coin.item.data.price : null;
+  return coin?.item.data.price || null;
 }
 
 export function getMarketCap(coinData: CoinData, symbol: string) {
   const coin = coinData.coins.find(
     (c) => c.item.symbol.toLowerCase() === symbol.toLowerCase()
   );
-  return coin ? coin.item.data.market_cap : null;
+  return coin?.item.data.market_cap || null;
 }
 
 export function get24hChange(
@@ -47,14 +50,14 @@ export function getSparkline(coinData: CoinData, symbol: string) {
   const coin = coinData.coins.find(
     (c) => c.item.symbol.toLowerCase() === symbol.toLowerCase()
   );
-  return coin ? coin.item.data.sparkline : null;
+  return coin?.item.data.sparkline || null;
 }
 
 export function get24hVolume(coinData: CoinData, symbol: string) {
   const coin = coinData.coins.find(
     (c) => c.item.symbol.toLowerCase() === symbol.toLowerCase()
   );
-  return coin ? coin.item.data.total_volume : null;
+  return coin?.item.data.total_volume || null;
 }
 
 export function listTrending(coinData: CoinData) {

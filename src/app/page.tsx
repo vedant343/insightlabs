@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import ChatBubble from "../components/ChatBubble";
 import PriceChart from "../components/PriceChart";
 import {
-  fetchCurrentPrice,
   fetchTrendingCoins,
   fetch7DayChart,
   getPrice,
@@ -75,11 +74,19 @@ export default function ChatPage() {
         } ${coin.toUpperCase()}.`;
       } else if (/portfolio value/i.test(input)) {
         let total = 0;
-        for (const coin of Object.keys(holdings)) {
-          const price = await fetchCurrentPrice(coin);
-          if (price) total += price * holdings[coin];
+        const trendingData = await fetchTrendingCoins();
+
+        for (const [coin, amount] of Object.entries(holdings)) {
+          const price = getPrice(trendingData, coin);
+          if (price) {
+            total += price * amount;
+          }
         }
-        botResponse = `Your portfolio is worth ~$${total.toFixed(2)}`;
+
+        botResponse = `Your portfolio is worth $${total.toLocaleString(
+          undefined,
+          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+        )}`;
       } else if (/7[- ]day chart of ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/7[- ]day chart of ([a-zA-Z]+)/i);
         const coinId = match![1].toLowerCase();
@@ -96,8 +103,11 @@ export default function ChatPage() {
         const trendingData = await fetchTrendingCoins();
         const price = getPrice(trendingData, symbol);
         botResponse = price
-          ? `${symbol.toUpperCase()} is trading at $${price}`
-          : `Coin not found`;
+          ? `${symbol.toUpperCase()} is trading at $${price.toLocaleString(
+              undefined,
+              { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+            )}`
+          : `Sorry, couldn't find price for ${symbol.toUpperCase()}`;
       } else if (/market cap of ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/market cap of ([a-zA-Z]+)/i);
         const symbol = match![1];
@@ -105,7 +115,7 @@ export default function ChatPage() {
         const cap = getMarketCap(trendingData, symbol);
         botResponse = cap
           ? `${symbol.toUpperCase()} market cap is $${cap.toLocaleString()}`
-          : `Coin not found`;
+          : `Sorry, couldn't find market cap for ${symbol.toUpperCase()}`;
       } else if (/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i);
         const symbol = match![1];
@@ -117,15 +127,15 @@ export default function ChatPage() {
             ? `${symbol.toUpperCase()} changed ${change.toFixed(
                 2
               )}% in ${currency.toUpperCase()} last 24h`
-            : `Data not found`;
+            : `Sorry, couldn't find 24h change data for ${symbol.toUpperCase()}`;
       } else if (/sparkline of ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/sparkline of ([a-zA-Z]+)/i);
         const symbol = match![1];
         const trendingData = await fetchTrendingCoins();
         const url = getSparkline(trendingData, symbol);
         botResponse = url
-          ? `Here is the sparkline: ${url}`
-          : `No sparkline found`;
+          ? `Here is the sparkline for ${symbol.toUpperCase()}: ${url}`
+          : `Sorry, couldn't find sparkline for ${symbol.toUpperCase()}`;
       } else if (/24h volume of ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/24h volume of ([a-zA-Z]+)/i);
         const symbol = match![1];
@@ -133,16 +143,19 @@ export default function ChatPage() {
         const vol = get24hVolume(trendingData, symbol);
         botResponse = vol
           ? `${symbol.toUpperCase()} 24h volume is $${vol.toLocaleString()}`
-          : `Coin not found`;
+          : `Sorry, couldn't find 24h volume for ${symbol.toUpperCase()}`;
       } else if (/list trending/i.test(input)) {
         const trendingData = await fetchTrendingCoins();
         const trending = listTrending(trendingData);
-        botResponse = trending
-          .map(
-            (t: { name: string; symbol: string; rank: number }) =>
-              `${t.name} (${t.symbol}) rank ${t.rank}`
-          )
-          .join("\n");
+        botResponse =
+          trending.length > 0
+            ? trending
+                .map(
+                  (t: { name: string; symbol: string; rank: number }) =>
+                    `${t.name} (${t.symbol}) rank ${t.rank}`
+                )
+                .join("\n")
+            : "Sorry, couldn't fetch trending coins";
       } else {
         botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of BTC", "price of bitcoin", "market cap of ethereum", "24h change of BTC in USD", "sparkline of ETH", "24h volume of BTC", "list trending"`;
       }
@@ -151,7 +164,7 @@ export default function ChatPage() {
       speak(botResponse);
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
-      setError("Oops! Failed to fetch data.");
+      setError("Oops! Failed to fetch data. Please try again.");
     } finally {
       setIsThinking(false);
       setInput("");
