@@ -42,7 +42,6 @@ export default function ChatPage() {
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Smooth scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
