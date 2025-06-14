@@ -44,7 +44,6 @@ export async function fetch7DayChart(id: string) {
   return data.prices; // [ [timestamp, price], ... ]
 }
 
-// Export utility functions for direct use
 export {
   getPrice,
   getMarketCap,
