@@ -73,7 +73,7 @@ export default function ChatPage() {
           newHoldings[coin]
         } ${coin.toUpperCase()}.`;
       } else if (/portfolio value/i.test(input)) {
-        let total = 0;
+        let total = ;
         const trendingData = await fetchTrendingCoins();
 
         for (const [coin, amount] of Object.entries(holdings)) {
