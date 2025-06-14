@@ -12,6 +12,11 @@ import {
 
 type ChatMessage = { role: "user" | "bot"; message: string };
 
+function speak(text: string) {
+  const msg = new SpeechSynthesisUtterance(text);
+  window.speechSynthesis.speak(msg);
+}
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "bot", message: "Hi! Ask me about crypto prices or holdings..." },
@@ -127,6 +132,7 @@ export default function ChatPage() {
       }
 
       setMessages((prev) => [...prev, { role: "bot", message: botResponse }]);
+      speak(botResponse);
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
       setError("Oops! Failed to fetch data.");
