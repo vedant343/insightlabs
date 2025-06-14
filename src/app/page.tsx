@@ -2,69 +2,15 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import ChatBubble from "../components/ChatBubble";
+import PriceChart from "../components/PriceChart";
+import {
+  fetchCurrentPrice,
+  fetchTrendingCoins,
+  fetchBasicStats,
+  fetch7DayChart,
+} from "../lib/coinGecko";
 
 type ChatMessage = { role: "user" | "bot"; message: string };
-
-interface CoinItem {
-  item: {
-    name: string;
-    symbol: string;
-  };
-}
-
-// API functions
-async function fetchCurrentPrice(coinId: string): Promise<number | null> {
-  try {
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`
-    );
-    const data = await response.json();
-    return data[coinId]?.usd || null;
-  } catch (error) {
-    console.error("Error fetching price:", error);
-    return null;
-  }
-}
-
-async function fetchTrendingCoins(): Promise<Array<{
-  name: string;
-  symbol: string;
-}> | null> {
-  try {
-    const response = await fetch(
-      "https://api.coingecko.com/api/v3/search/trending"
-    );
-    const data = await response.json();
-    return data.coins.map((coin: CoinItem) => ({
-      name: coin.item.name,
-      symbol: coin.item.symbol,
-    }));
-  } catch (error) {
-    console.error("Error fetching trending coins:", error);
-    return null;
-  }
-}
-
-async function fetchBasicStats(coinId: string): Promise<{
-  marketCap: number;
-  change24h: number;
-  description: string;
-} | null> {
-  try {
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${coinId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false`
-    );
-    const data = await response.json();
-    return {
-      marketCap: data.market_data.market_cap.usd,
-      change24h: data.market_data.price_change_percentage_24h,
-      description: data.description.en,
-    };
-  } catch (error) {
-    console.error("Error fetching basic stats:", error);
-    return null;
-  }
-}
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -74,6 +20,15 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chartPrices, setChartPrices] = useState<[number, number][] | null>(
+    null
+  );
+  const [holdings, setHoldings] = useState<Record<string, number>>(() => {
+    if (typeof window !== "undefined") {
+      return JSON.parse(localStorage.getItem("holdings") || "{}");
+    }
+    return {};
+  });
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -94,8 +49,39 @@ export default function ChatPage() {
     let botResponse = "";
 
     try {
-      // Determine what the user wants
-      if (/current price of ([a-zA-Z ]+)/i.test(input)) {
+      if (/i have (\d+(?:\.\d+)?) ([a-zA-Z]+)/i.test(input)) {
+        const match = input.match(/i have (\d+(?:\.\d+)?) ([a-zA-Z]+)/i);
+        const qty = parseFloat(match![1]);
+        const coin = match![2].toLowerCase();
+
+        const newHoldings = {
+          ...holdings,
+          [coin]: (holdings[coin] || 0) + qty,
+        };
+        setHoldings(newHoldings);
+        localStorage.setItem("holdings", JSON.stringify(newHoldings));
+
+        botResponse = `Got it. You now have ${
+          newHoldings[coin]
+        } ${coin.toUpperCase()}.`;
+      } else if (/portfolio value/i.test(input)) {
+        let total = 0;
+        for (const coin of Object.keys(holdings)) {
+          const price = await fetchCurrentPrice(coin);
+          if (price) total += price * holdings[coin];
+        }
+        botResponse = `Your portfolio is worth ~$${total.toFixed(2)}`;
+      } else if (/7[- ]day chart of ([a-zA-Z]+)/i.test(input)) {
+        const match = input.match(/7[- ]day chart of ([a-zA-Z]+)/i);
+        const coinId = match![1].toLowerCase();
+        const prices = await fetch7DayChart(coinId);
+        if (prices) {
+          setChartPrices(prices);
+          botResponse = `Here is the 7-day chart of ${coinId.toUpperCase()}.`;
+        } else {
+          botResponse = `Sorry, couldn't load the chart for ${coinId}`;
+        }
+      } else if (/current price of ([a-zA-Z ]+)/i.test(input)) {
         const match = input.match(/current price of ([a-zA-Z ]+)/i);
         const coinId = match?.[1]?.trim().toLowerCase();
         if (coinId) {
@@ -113,7 +99,10 @@ export default function ChatPage() {
             `Trending now:\n` +
             trending
               .slice(0, 5)
-              .map((c, i) => `${i + 1}. ${c.name} (${c.symbol})`)
+              .map(
+                (c: { name: string; symbol: string }, i: number) =>
+                  `${i + 1}. ${c.name} (${c.symbol})`
+              )
               .join("\n");
         } else {
           botResponse = `Sorry, I couldn't fetch trending coins.`;
@@ -134,7 +123,7 @@ export default function ChatPage() {
           }
         }
       } else {
-        botResponse = `I didn't get that. Try:\n- "current price of bitcoin"\n- "trending coins"\n- "basic stats of ethereum"`;
+        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of BTC", "current price of bitcoin", "trending coins", "basic stats of ethereum"`;
       }
 
       setMessages((prev) => [...prev, { role: "bot", message: botResponse }]);
@@ -162,6 +151,12 @@ export default function ChatPage() {
         )}
 
         {error && <div className="text-red-500">{error}</div>}
+
+        {chartPrices && (
+          <div className="mt-4 p-4 bg-white rounded-lg shadow">
+            <PriceChart prices={chartPrices} />
+          </div>
+        )}
 
         <div ref={messagesEndRef} />
       </div>
