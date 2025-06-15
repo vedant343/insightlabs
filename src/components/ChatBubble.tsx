@@ -26,6 +26,7 @@ export default function ChatBubble({
               : "bg-gray-200 text-gray-900 rounded-bl-none"
           }`}
         >
+        
           {message}
         </div>
         <span
@@ -39,6 +40,7 @@ export default function ChatBubble({
     </div>
   );
 }
+
 
 
 
