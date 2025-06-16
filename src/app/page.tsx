@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useRef, useEffect } from "react";
 import ChatBubble from "../components/ChatBubble";
 import PriceChart from "../components/PriceChart";
@@ -7,12 +6,8 @@ import {
   fetchTrendingCoins,
   getPrice,
   getMarketCap,
-  get24hChange,
   getSparkline,
-  get24hVolume,
-  listTrending,
   fetchCurrentPrice,
-  getCoinDescription,
   getCoinStats,
   fetch7DayChart,
 } from "../lib/coinGecko";
@@ -112,7 +107,10 @@ export default function ChatPage() {
         }
         botResponse = `Your portfolio is worth $${total.toLocaleString(
           undefined,
-          { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }
         )}`;
       } else if (/7[- ]day chart of ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/7[- ]day chart of ([a-zA-Z]+)/i);
@@ -135,7 +133,6 @@ export default function ChatPage() {
         const trendingData = await fetchTrendingCoins();
         let price = getPrice(trendingData, symbol);
         if (!price) {
-          // Try fallback using symbolToId and fetchCurrentPrice
           const id = symbolToId[symbol.toLowerCase()];
           if (id) {
             price = await fetchCurrentPrice(id);
@@ -144,7 +141,10 @@ export default function ChatPage() {
         botResponse = price
           ? `${symbol.toUpperCase()} is trading at $${price.toLocaleString(
               undefined,
-              { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }
             )}`
           : `Sorry, couldn't find price for ${symbol.toUpperCase()}`;
       } else if (/market cap of ([a-zA-Z]+)/i.test(input)) {
@@ -155,17 +155,6 @@ export default function ChatPage() {
         botResponse = cap
           ? `${symbol.toUpperCase()} market cap is ${cap.toLocaleString()}`
           : `Sorry, couldn't find market cap for ${symbol.toUpperCase()}`;
-      } else if (/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i.test(input)) {
-        const match = input.match(/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i);
-        const symbol = match![1];
-        const currency = match![2];
-        const change = get24hChange();
-        botResponse =
-          change !== null
-            ? `${symbol.toUpperCase()} changed ${change.toFixed(
-                2
-              )}% in ${currency.toUpperCase()} last 24h`
-            : `Sorry, couldn't find 24h change data for ${symbol.toUpperCase()}`;
       } else if (/sparkline of ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/sparkline of ([a-zA-Z]+)/i);
         const symbol = match![1];
@@ -174,17 +163,13 @@ export default function ChatPage() {
         botResponse = url
           ? `Here is the sparkline for ${symbol.toUpperCase()}: ${url}`
           : `Sorry, couldn't find sparkline for ${symbol.toUpperCase()}`;
-      } else if (/24h volume of ([a-zA-Z]+)/i.test(input)) {
-        const match = input.match(/24h volume of ([a-zA-Z]+)/i);
-        const symbol = match![1];
-        const trendingData = await fetchTrendingCoins();
-        const vol = get24hVolume(trendingData, symbol);
-        botResponse = vol
-          ? `${symbol.toUpperCase()} 24h volume is ${vol.toLocaleString()}`
-          : `Sorry, couldn't find 24h volume for ${symbol.toUpperCase()}`;
       } else if (/list trending/i.test(input)) {
         const trendingData = await fetchTrendingCoins();
-        const trending = listTrending(trendingData);
+        const trending = trendingData.coins.map((t) => ({
+          name: t.item.name,
+          symbol: t.item.symbol,
+          rank: t.item.market_cap_rank,
+        }));
         botResponse =
           trending.length > 0
             ? trending
@@ -194,13 +179,6 @@ export default function ChatPage() {
                 )
                 .join("\n")
             : "Sorry, couldn't fetch trending coins";
-      } else if (/get coin description/i.test(input)) {
-        const match = input.match(/get coin description/i);
-        const coinId = match![1];
-        const description = await getCoinDescription(coinId);
-        botResponse = description
-          ? `Here is the description for ${coinId.toUpperCase()}: ${description}`
-          : `Sorry, couldn't find description for ${coinId}`;
       } else if (/get coin stats ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/get coin stats ([a-zA-Z]+)/i);
         const coinId = match![1];
