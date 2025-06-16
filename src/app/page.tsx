@@ -198,8 +198,8 @@ export default function ChatPage() {
         botResponse = description
           ? `Here is the description for ${coinId.toUpperCase()}: ${description}`
           : `Sorry, couldn't find description for ${coinId}`;
-      } else if (/get coin stats/i.test(input)) {
-        const match = input.match(/get coin stats/i);
+      } else if (/get coin stats ([a-zA-Z]+)/i.test(input)) {
+        const match = input.match(/get coin stats ([a-zA-Z]+)/i);
         const coinId = match![1];
         const stats = await getCoinStats(coinId);
         botResponse = `Here are the stats for ${coinId.toUpperCase()}:
