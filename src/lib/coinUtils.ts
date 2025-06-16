@@ -36,14 +36,7 @@ export function getMarketCap(coinData: CoinData, symbol: string) {
     : null;
 }
 
-export function get24hChange(
-  coinData: CoinData,
-  symbol: string,
-  currency: string
-) {
-  const coin = coinData.coins.find(
-    (c) => c.item.symbol.toLowerCase() === symbol.toLowerCase()
-  );
+export function get24hChange() {
   return null; // 24h change not available in trending data
 }
 
