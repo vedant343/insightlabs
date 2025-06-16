@@ -232,8 +232,8 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col p-4 max-w-md m-auto h-screen bg-gray-50">
-      <div className="flex-1 overflow-y-auto mb-4 p-2">
+    <div className="flex flex-col p-2 max-w-md m-auto h-screen bg-gray-50 border border-gray-200 rounded-lg shadow-lg">
+      <div className="flex-1 overflow-y-auto mb-2 p-2">
         {messages.map((msg, idx) => (
           <ChatBubble
             key={idx}
@@ -243,17 +243,17 @@ export default function ChatPage() {
           />
         ))}
         {isThinking && (
-          <div className="flex mb-4 justify-start">
-            <div className="bg-gray-200 p-3 rounded-lg animate-pulse">
+          <div className="flex mb-2 justify-start">
+            <div className="bg-gray-200 p-2 rounded-lg animate-pulse">
               thinking...
             </div>
           </div>
         )}
 
-        {error && <div className="text-red-500">{error}</div>}
+        {error && <div className="text-red-500 text-sm">{error}</div>}
 
         {chartPrices && (
-          <div className="mt-4 p-4 bg-white rounded-lg shadow">
+          <div className="mt-2 p-2 bg-white rounded-lg shadow border border-gray-200">
             <PriceChart prices={chartPrices} />
           </div>
         )}
@@ -261,16 +261,19 @@ export default function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSendMessage} className="flex">
+      <form
+        onSubmit={handleSendMessage}
+        className="flex gap-2 p-2 border-t border-gray-200 bg-white rounded-b-lg"
+      >
         <input
-          className="flex-1 p-2 mr-2 border rounded-full"
+          className="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
         <button
           disabled={isThinking}
-          className="p-2 bg-blue-500 text-gray-100 rounded-full disabled:opacity-50"
+          className="p-2 bg-blue-500 text-white rounded-full disabled:opacity-50 hover:bg-blue-600 transition-colors"
         >
           Send
         </button>
