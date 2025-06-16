@@ -98,7 +98,7 @@ export default function ChatPage() {
 
         botResponse = `Got it. You now have ${
           newHoldings[coin]
-        }  ${coin.toUpperCase()}.`;
+        }  ${coin}.`;
       } else if (/portfolio value/i.test(input)) {
         let total = 0;
         for (const [coin, amount] of Object.entries(holdings)) {
