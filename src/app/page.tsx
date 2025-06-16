@@ -94,7 +94,7 @@ export default function ChatPage() {
           ...holdings,
           [coin]: (holdings[coin] || 0) + qty,
         };
-        
+
         setHoldings(newHoldings);
         localStorage.setItem("holdings", JSON.stringify(newHoldings));
 
@@ -232,7 +232,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col p-4 max-w-md m-auto h-screen">
+    <div className="flex flex-col p-4 max-w-md m-auto h-screen bg-gray-50">
       <div className="flex-1 overflow-y-auto mb-4 p-2">
         {messages.map((msg, idx) => (
           <ChatBubble
@@ -263,14 +263,14 @@ export default function ChatPage() {
 
       <form onSubmit={handleSendMessage} className="flex">
         <input
-          className="flex-1 p-2 mr-2 border rounded"
+          className="flex-1 p-2 mr-2 border rounded-full"
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
         <button
           disabled={isThinking}
-          className="p-2 bg-blue-500 text-gray-100 rounded disabled:opacity-50"
+          className="p-2 bg-blue-500 text-gray-100 rounded-full disabled:opacity-50"
         >
           Send
         </button>
