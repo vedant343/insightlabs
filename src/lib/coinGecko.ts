@@ -5,7 +5,6 @@ import {
   getSparkline,
   get24hVolume,
   listTrending,
-  type CoinData,
 } from "./coinUtils";
 
 interface TrendingCoinData {
