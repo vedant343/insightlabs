@@ -8,6 +8,39 @@ import {
   type CoinData,
 } from "./coinUtils";
 
+interface TrendingCoinData {
+  price: number;
+  price_btc: string;
+  price_change_percentage_24h: Record<string, number>;
+  market_cap: string;
+  market_cap_btc: string;
+  total_volume: string;
+  total_volume_btc: string;
+  sparkline: string;
+  content: string | null;
+}
+
+interface TrendingCoinItem {
+  id: string;
+  coin_id: number;
+  name: string;
+  symbol: string;
+  market_cap_rank: number;
+  thumb: string;
+  small: string;
+  large: string;
+  slug: string;
+  price_btc: number;
+  score: number;
+  data: TrendingCoinData;
+}
+
+interface TrendingResponse {
+  coins: Array<{
+    item: TrendingCoinItem;
+  }>;
+}
+
 // 1. Get current price by id (like 'bitcoin', 'ethereum')
 export async function fetchCurrentPrice(id: string) {
   const res = await fetch(
@@ -18,9 +51,12 @@ export async function fetchCurrentPrice(id: string) {
 }
 
 // 2. Get trending coins with detailed data
-export async function fetchTrendingCoins(): Promise<CoinData> {
+export async function fetchTrendingCoins(): Promise<TrendingResponse> {
   const res = await fetch("https://api.coingecko.com/api/v3/search/trending");
-  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(`Failed to fetch trending coins: ${res.statusText}`);
+  }
+  const data: TrendingResponse = await res.json();
   return data;
 }
 
