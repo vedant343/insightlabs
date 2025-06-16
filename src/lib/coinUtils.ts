@@ -5,14 +5,16 @@ export interface CoinData {
       symbol: string;
       name: string;
       market_cap_rank: number;
-      price_btc: number;
       score: number;
       data: {
         price: number;
-        market_cap: number;
-        total_volume: number;
+        market_cap: string;
+        total_volume: string;
         sparkline: string;
-        price_change_percentage_24h: Record<string, number>;
+        content: {
+          title: string;
+          description: string;
+        } | null;
       };
     };
   }>;
@@ -29,7 +31,9 @@ export function getMarketCap(coinData: CoinData, symbol: string) {
   const coin = coinData.coins.find(
     (c) => c.item.symbol.toLowerCase() === symbol.toLowerCase()
   );
-  return coin?.item.data.market_cap || null;
+  return coin?.item.data.market_cap
+    ? parseFloat(coin.item.data.market_cap)
+    : null;
 }
 
 export function get24hChange(
@@ -40,10 +44,7 @@ export function get24hChange(
   const coin = coinData.coins.find(
     (c) => c.item.symbol.toLowerCase() === symbol.toLowerCase()
   );
-  if (!coin) return null;
-  const change =
-    coin.item.data.price_change_percentage_24h[currency.toLowerCase()];
-  return change !== undefined ? change : null;
+  return null; // 24h change not available in trending data
 }
 
 export function getSparkline(coinData: CoinData, symbol: string) {
@@ -57,7 +58,9 @@ export function get24hVolume(coinData: CoinData, symbol: string) {
   const coin = coinData.coins.find(
     (c) => c.item.symbol.toLowerCase() === symbol.toLowerCase()
   );
-  return coin?.item.data.total_volume || null;
+  return coin?.item.data.total_volume
+    ? parseFloat(coin.item.data.total_volume)
+    : null;
 }
 
 export function listTrending(coinData: CoinData) {
