@@ -37,7 +37,7 @@ export default function ChatBubble({ role, message, timestamp }: ChatBubbleProps
         <span
           className={`text-xs mt-1 ${
             role === "user" ? "text-right" : "text-left"
-          } text-gray-500 flex items-center space-x-1`}
+          } text-gray-900 flex items-center space-x-1`}
         >
           {/* single check for delivery for bot messages, for style */}
           {role === "bot" && <Check size={14} color="#34B7F1" />}
