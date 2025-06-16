@@ -280,7 +280,7 @@ export default function ChatPage() {
         />
         <button
           disabled={isThinking}
-          className="p-2 bg-blue-500 text-white rounded-full disabled:opacity-50 hover:bg-blue-600 transition-colors"
+          className="p-2 bg-[#075E54] text-white rounded-full disabled:opacity-50 hover:bg-blue-600 transition-colors"
         >
           Send
         </button>
