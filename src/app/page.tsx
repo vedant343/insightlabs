@@ -149,7 +149,7 @@ export default function ChatPage() {
         const trendingData = await fetchTrendingCoins();
         const cap = getMarketCap(trendingData, symbol);
         botResponse = cap
-          ? `${symbol.toUpperCase()} market cap is $${cap.toLocaleString()}`
+          ? `${symbol.toUpperCase()} market cap is ${cap.toLocaleString()}`
           : `Sorry, couldn't find market cap for ${symbol.toUpperCase()}`;
       } else if (/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i);
