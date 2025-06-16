@@ -232,8 +232,17 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col p-2 max-w-md m-auto h-screen bg-gray-50 border border-gray-200 rounded-lg shadow-lg">
-      <div className="flex-1 overflow-y-auto mb-2 p-2">
+    <div className="flex flex-col max-w-md m-auto h-screen bg-gray-50 border border-gray-200 rounded-lg shadow-lg">
+      <div className="bg-[#075E54] text-white p-3 rounded-t-lg flex items-center">
+        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3">
+          <span className="text-[#075E54] font-bold">CB</span>
+        </div>
+        <div>
+          <h1 className="font-semibold text-lg">Crypto Bot</h1>
+          <p className="text-xs text-gray-200">Online</p>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2">
         {messages.map((msg, idx) => (
           <ChatBubble
             key={idx}
