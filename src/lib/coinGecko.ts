@@ -81,6 +81,23 @@ export async function getPortfolioValue(holdings: Record<string, number>) {
   }, 0);
 }
 
+// Get current price of a coin by id
+export async function fetchCurrentPrice(id: string): Promise<number | null> {
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`
+    );
+    if (!res.ok) {
+      throw new Error(`Failed to fetch price: ${res.statusText}`);
+    }
+    const data = await res.json();
+    return data[id]?.usd || null;
+  } catch (error) {
+    console.error("Error fetching current price:", error);
+    return null;
+  }
+}
+
 export {
   getPrice,
   getMarketCap,
