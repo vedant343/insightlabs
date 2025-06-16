@@ -253,7 +253,7 @@ export default function ChatPage() {
         ))}
         {isThinking && (
           <div className="flex mb-2 justify-start">
-            <div className="bg-gray-200 p-2 rounded-lg animate-pulse">
+            <div className="bg-gray-200 p-2 text-gray-900 rounded-lg animate-pulse">
               thinking...
             </div>
           </div>
