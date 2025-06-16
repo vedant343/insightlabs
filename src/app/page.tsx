@@ -94,7 +94,7 @@ export default function ChatPage() {
           ...holdings,
           [coin]: (holdings[coin] || 0) + qty,
         };
-
+        
         setHoldings(newHoldings);
         localStorage.setItem("holdings", JSON.stringify(newHoldings));
 
