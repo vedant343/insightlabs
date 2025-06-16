@@ -5,7 +5,6 @@ import ChatBubble from "../components/ChatBubble";
 import PriceChart from "../components/PriceChart";
 import {
   fetchTrendingCoins,
-  fetch7DayChart,
   getPrice,
   getMarketCap,
   get24hChange,
@@ -52,7 +51,6 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Symbol to CoinGecko id mapping (expand as needed)
   const symbolToId: Record<string, string> = {
     btc: "bitcoin",
     eth: "ethereum",
@@ -100,7 +98,7 @@ export default function ChatPage() {
 
         botResponse = `Got it. You now have ${
           newHoldings[coin]
-        } ${coin.toUpperCase()}.`;
+        }  ${coin.toUpperCase()}.`;
       } else if (/portfolio value/i.test(input)) {
         let total = 0;
         for (const [coin, amount] of Object.entries(holdings)) {
