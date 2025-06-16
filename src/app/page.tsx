@@ -13,6 +13,8 @@ import {
   get24hVolume,
   listTrending,
   fetchCurrentPrice,
+  getCoinDescription,
+  getCoinStats,
 } from "../lib/coinGecko";
 
 type ChatMessage = { role: "user" | "bot"; message: string; timestamp: string };
@@ -92,7 +94,7 @@ export default function ChatPage() {
           ...holdings,
           [coin]: (holdings[coin] || 0) + qty,
         };
-        
+
         setHoldings(newHoldings);
         localStorage.setItem("holdings", JSON.stringify(newHoldings));
 
@@ -189,8 +191,26 @@ export default function ChatPage() {
                 )
                 .join("\n")
             : "Sorry, couldn't fetch trending coins";
+      } else if (/get coin description/i.test(input)) {
+        const match = input.match(/get coin description/i);
+        const coinId = match![1];
+        const description = await getCoinDescription(coinId);
+        botResponse = description
+          ? `Here is the description for ${coinId.toUpperCase()}: ${description}`
+          : `Sorry, couldn't find description for ${coinId}`;
+      } else if (/get coin stats/i.test(input)) {
+        const match = input.match(/get coin stats/i);
+        const coinId = match![1];
+        const stats = await getCoinStats(coinId);
+        botResponse = `Here are the stats for ${coinId.toUpperCase()}:
+        - Market Cap: $${stats.marketCap.toLocaleString()}
+        - Market Cap Rank: ${stats.marketCapRank}
+        - Total Volume: $${stats.totalVolume.toLocaleString()}
+        - Sparkline: ${stats.sparkline}
+        - Score: ${stats.score}
+        - Coin ID: ${stats.coinId}`;
       } else {
-        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of BTC", "price of bitcoin", "market cap of ethereum", "24h change of BTC in USD", "sparkline of ETH", "24h volume of BTC", "list trending"`;
+        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of BTC", "price of bitcoin", "market cap of ethereum", "24h change of BTC in USD", "sparkline of ETH", "24h volume of BTC", "list trending", "get coin description ethereum", "get coin stats ethereum"`;
       }
 
       setMessages((prev) => [

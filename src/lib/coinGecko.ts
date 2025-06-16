@@ -9,14 +9,15 @@ import {
 
 interface TrendingCoinData {
   price: number;
-  price_btc: string;
-  price_change_percentage_24h: Record<string, number>;
   market_cap: string;
   market_cap_btc: string;
   total_volume: string;
   total_volume_btc: string;
   sparkline: string;
-  content: string | null;
+  content: {
+    title: string;
+    description: string;
+  } | null;
 }
 
 interface TrendingCoinItem {
@@ -25,11 +26,6 @@ interface TrendingCoinItem {
   name: string;
   symbol: string;
   market_cap_rank: number;
-  thumb: string;
-  small: string;
-  large: string;
-  slug: string;
-  price_btc: number;
   score: number;
   data: TrendingCoinData;
 }
@@ -40,16 +36,28 @@ interface TrendingResponse {
   }>;
 }
 
-// 1. Get current price by id (like 'bitcoin', 'ethereum')
-export async function fetchCurrentPrice(id: string) {
-  const res = await fetch(
-    `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd`
-  );
+// Get coin description by id
+export async function getCoinDescription(id: string): Promise<string | null> {
+  const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`);
   const data = await res.json();
-  return data[id]?.usd;
+  return data?.description?.en || null;
 }
 
-// 2. Get trending coins with detailed data
+// Get coin stats by id
+export async function getCoinStats(id: string) {
+  const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`);
+  const data = await res.json();
+  return {
+    marketCap: data?.market_data?.market_cap?.usd,
+    marketCapRank: data?.market_cap_rank,
+    totalVolume: data?.market_data?.total_volume?.usd,
+    sparkline: data?.image?.sparkline,
+    score: data?.community_score,
+    coinId: data?.id,
+  };
+}
+
+// Get trending coins with detailed data
 export async function fetchTrendingCoins(): Promise<TrendingResponse> {
   const res = await fetch("https://api.coingecko.com/api/v3/search/trending");
   if (!res.ok) {
@@ -59,24 +67,18 @@ export async function fetchTrendingCoins(): Promise<TrendingResponse> {
   return data;
 }
 
-// 3. Get Coin Stats (like Market Cap, 24h change, Description) by id
-export async function fetchBasicStats(id: string) {
-  const res = await fetch(`https://api.coingecko.com/api/v3/coins/${id}`);
-  const data = await res.json();
-  return {
-    marketCap: data?.market_data?.market_cap?.usd,
-    change24h: data?.market_data?.price_change_percentage_24h,
-    description: data?.description?.en?.split(".")[0], // first sentence
-  };
-}
-
-// 4. Get 7-day price chart data
-export async function fetch7DayChart(id: string) {
+// Get portfolio value (unchanged)
+export async function getPortfolioValue(holdings: Record<string, number>) {
+  const ids = Object.keys(holdings).join(",");
   const res = await fetch(
-    `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=7`
+    `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`
   );
   const data = await res.json();
-  return data.prices; // [ [timestamp, price], ... ]
+
+  return Object.entries(holdings).reduce((total, [id, amount]) => {
+    const price = data[id]?.usd || 0;
+    return total + price * amount;
+  }, 0);
 }
 
 export {
