@@ -86,7 +86,7 @@ export default function ChatPage() {
       if (/i have (\d+(?:\.\d+)?) ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/i have (\d+(?:\.\d+)?) ([a-zA-Z]+)/i);
         const qty = parseFloat(match![1]);
-        const coin = match![1].toLowerCase();
+        const coin = match![2].toLowerCase();
 
         const newHoldings = {
           ...holdings,
@@ -98,7 +98,7 @@ export default function ChatPage() {
 
         botResponse = `Got it. You now have ${
           newHoldings[coin]
-        }  ${coin}.`;
+        } ${coin.toUpperCase()}.`;
       } else if (/portfolio value/i.test(input)) {
         let total = 0;
         for (const [coin, amount] of Object.entries(holdings)) {
