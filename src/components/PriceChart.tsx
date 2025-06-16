@@ -31,7 +31,7 @@ export default function PriceChart({ prices }: { prices: [number, number][] }) {
       x: {
         type: "time" as const,
         time: {
-          unit: "day",
+          unit: "day" as const,
         },
       },
     },
