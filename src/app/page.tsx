@@ -15,7 +15,7 @@ import {
   fetchCurrentPrice,
 } from "../lib/coinGecko";
 
-type ChatMessage = { role: "user" | "bot"; message: string };
+type ChatMessage = { role: "user" | "bot"; message: string; timestamp: string };
 
 function speak(text: string) {
   const msg = new SpeechSynthesisUtterance(text);
@@ -24,7 +24,11 @@ function speak(text: string) {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "bot", message: "Hi! Ask me about crypto prices or holdings..." },
+    {
+      role: "bot",
+      message: "Hi! Ask me about crypto prices or holdings...",
+      timestamp: new Date().toLocaleTimeString(),
+    },
   ]);
 
   const [input, setInput] = useState("");
@@ -46,11 +50,32 @@ export default function ChatPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Symbol to CoinGecko id mapping (expand as needed)
+  const symbolToId: Record<string, string> = {
+    btc: "bitcoin",
+    eth: "ethereum",
+    usdt: "tether",
+    sol: "solana",
+    bnb: "binancecoin",
+    xrp: "ripple",
+    ada: "cardano",
+    doge: "dogecoin",
+    ton: "the-open-network",
+    avax: "avalanche-2",
+  };
+
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim()) return;
 
-    setMessages((prev) => [...prev, { role: "user", message: input }]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "user",
+        message: input,
+        timestamp: new Date().toLocaleTimeString(),
+      },
+    ]);
 
     setIsThinking(true);
     setError(null);
@@ -61,7 +86,7 @@ export default function ChatPage() {
       if (/i have (\d+(?:\.\d+)?) ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/i have (\d+(?:\.\d+)?) ([a-zA-Z]+)/i);
         const qty = parseFloat(match![1]);
-        const coin = match![2].toLowerCase();
+        const coin = match![1].toLowerCase();
 
         const newHoldings = {
           ...holdings,
@@ -74,20 +99,6 @@ export default function ChatPage() {
           newHoldings[coin]
         } ${coin.toUpperCase()}.`;
       } else if (/portfolio value/i.test(input)) {
-        // Symbol to CoinGecko id mapping (expand as needed)
-        const symbolToId: Record<string, string> = {
-          btc: "bitcoin",
-          eth: "ethereum",
-          usdt: "tether",
-          sol: "solana",
-          bnb: "binancecoin",
-          xrp: "ripple",
-          ada: "cardano",
-          doge: "dogecoin",
-          ton: "the-open-network",
-          avax: "avalanche-2",
-          // Add more as needed
-        };
         let total = 0;
         for (const [coin, amount] of Object.entries(holdings)) {
           const id = symbolToId[coin.toLowerCase()];
@@ -115,7 +126,14 @@ export default function ChatPage() {
         const match = input.match(/price of ([a-zA-Z]+)/i);
         const symbol = match![1];
         const trendingData = await fetchTrendingCoins();
-        const price = getPrice(trendingData, symbol);
+        let price = getPrice(trendingData, symbol);
+        if (!price) {
+          // Try fallback using symbolToId and fetchCurrentPrice
+          const id = symbolToId[symbol.toLowerCase()];
+          if (id) {
+            price = await fetchCurrentPrice(id);
+          }
+        }
         botResponse = price
           ? `${symbol.toUpperCase()} is trading at $${price.toLocaleString(
               undefined,
@@ -174,7 +192,14 @@ export default function ChatPage() {
         botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of BTC", "price of bitcoin", "market cap of ethereum", "24h change of BTC in USD", "sparkline of ETH", "24h volume of BTC", "list trending"`;
       }
 
-      setMessages((prev) => [...prev, { role: "bot", message: botResponse }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "bot",
+          message: botResponse,
+          timestamp: new Date().toLocaleTimeString(),
+        },
+      ]);
       speak(botResponse);
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
@@ -189,7 +214,12 @@ export default function ChatPage() {
     <div className="flex flex-col p-4 max-w-md m-auto h-screen">
       <div className="flex-1 overflow-y-auto mb-4 p-2">
         {messages.map((msg, idx) => (
-          <ChatBubble key={idx} role={msg.role} message={msg.message} />
+          <ChatBubble
+            key={idx}
+            role={msg.role}
+            message={msg.message}
+            timestamp={msg.timestamp}
+          />
         ))}
         {isThinking && (
           <div className="flex mb-4 justify-start">
