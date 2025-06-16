@@ -116,13 +116,18 @@ export default function ChatPage() {
         )}`;
       } else if (/7[- ]day chart of ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/7[- ]day chart of ([a-zA-Z]+)/i);
-        const coinId = match![1].toLowerCase();
-        const prices = await fetch7DayChart(coinId);
-        if (prices) {
-          setChartPrices(prices);
-          botResponse = `Here is the 7-day chart of ${coinId.toUpperCase()}.`;
+        const symbol = match![1].toLowerCase();
+        const id = symbolToId[symbol];
+        if (!id) {
+          botResponse = `Sorry, I don't have data for ${symbol.toUpperCase()}`;
         } else {
-          botResponse = `Sorry, couldn't load the chart for ${coinId}`;
+          const prices = await fetch7DayChart(id);
+          if (prices) {
+            setChartPrices(prices);
+            botResponse = `Here is the 7-day chart of ${symbol.toUpperCase()}.`;
+          } else {
+            botResponse = `Sorry, couldn't load the chart for ${symbol.toUpperCase()}`;
+          }
         }
       } else if (/price of ([a-zA-Z]+)/i.test(input)) {
         const match = input.match(/price of ([a-zA-Z]+)/i);
@@ -208,7 +213,7 @@ export default function ChatPage() {
         - Score: ${stats.score}
         - Coin ID: ${stats.coinId}`;
       } else {
-        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "price of BTC", "market cap of ethereum", "sparkline of AURA", "list trending", "get coin stats ethereum"`;
+        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of SOL", "price of BTC", "market cap of ethereum", "sparkline of AURA", "list trending", "get coin stats ethereum"`;
       }
 
       setMessages((prev) => [
