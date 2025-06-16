@@ -275,7 +275,7 @@ export default function ChatPage() {
         className="flex gap-2 p-2 border-t border-gray-200 bg-white rounded-b-lg"
       >
         <input
-          className="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
+          className="flex-1 p-2 text-gray-900 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
