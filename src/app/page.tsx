@@ -208,7 +208,7 @@ export default function ChatPage() {
         - Score: ${stats.score}
         - Coin ID: ${stats.coinId}`;
       } else {
-        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "7-day chart of BTC", "price of bitcoin", "market cap of ethereum", "24h change of BTC in USD", "sparkline of ETH", "24h volume of BTC", "list trending", "get coin description ethereum", "get coin stats ethereum"`;
+        botResponse = `Try commands: "I have 2 ETH", "portfolio value", "price of BTC", "market cap of ethereum", "sparkline of AURA", "list trending", "get coin stats ethereum"`;
       }
 
       setMessages((prev) => [
