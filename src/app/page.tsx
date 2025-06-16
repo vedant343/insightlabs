@@ -177,7 +177,7 @@ export default function ChatPage() {
         const trendingData = await fetchTrendingCoins();
         const vol = get24hVolume(trendingData, symbol);
         botResponse = vol
-          ? `${symbol.toUpperCase()} 24h volume is $${vol.toLocaleString()}`
+          ? `${symbol.toUpperCase()} 24h volume is ${vol.toLocaleString()}`
           : `Sorry, couldn't find 24h volume for ${symbol.toUpperCase()}`;
       } else if (/list trending/i.test(input)) {
         const trendingData = await fetchTrendingCoins();
