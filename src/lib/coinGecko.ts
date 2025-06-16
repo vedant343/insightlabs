@@ -98,6 +98,28 @@ export async function fetchCurrentPrice(id: string): Promise<number | null> {
   }
 }
 
+// Get 7-day price chart data for a coin
+export async function fetch7DayChart(
+  id: string
+): Promise<[number, number][] | null> {
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=usd&days=7&interval=daily`
+    );
+    if (!res.ok) {
+      throw new Error(`Failed to fetch chart data: ${res.statusText}`);
+    }
+    const data = await res.json();
+    return data.prices.map(([timestamp, price]: [number, number]) => [
+      timestamp,
+      price,
+    ]);
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+    return null;
+  }
+}
+
 export {
   getPrice,
   getMarketCap,

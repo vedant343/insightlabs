@@ -14,6 +14,7 @@ import {
   fetchCurrentPrice,
   getCoinDescription,
   getCoinStats,
+  fetch7DayChart,
 } from "../lib/coinGecko";
 
 type ChatMessage = { role: "user" | "bot"; message: string; timestamp: string };
@@ -153,8 +154,7 @@ export default function ChatPage() {
         const match = input.match(/24h change of ([a-zA-Z]+) in ([a-zA-Z]+)/i);
         const symbol = match![1];
         const currency = match![2];
-        const trendingData = await fetchTrendingCoins();
-        const change = get24hChange(trendingData, symbol, currency);
+        const change = get24hChange();
         botResponse =
           change !== null
             ? `${symbol.toUpperCase()} changed ${change.toFixed(

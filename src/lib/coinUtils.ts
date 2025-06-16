@@ -36,8 +36,9 @@ export function getMarketCap(coinData: CoinData, symbol: string) {
     : null;
 }
 
-export function get24hChange() {
-  return null; // 24h change not available in trending data
+export function get24hChange(): number | null {
+  // Since 24h change is not available in trending data, we'll return null
+  return null;
 }
 
 export function getSparkline(coinData: CoinData, symbol: string) {
